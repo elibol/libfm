@@ -29,6 +29,7 @@
 #define FM_LEARN_SGD_ELEMENT_H_
 
 #include "fm_learn_sgd.h"
+#include <chrono>
 
 class fm_learn_sgd_element: public fm_learn_sgd {
  public:
@@ -52,7 +53,7 @@ void fm_learn_sgd_element::learn(Data& train, Data& test) {
   // SGD
   for (int i = 0; i < num_iter; i++) {
 
-    double iteration_time = getusertime();
+    double t = getusertime();
     for (train.data->begin(); !train.data->end(); train.data->next()) {
       double p = fm->predict(train.data->getRow(), sum, sum_sqr);
       double mult = 0;
@@ -65,10 +66,11 @@ void fm_learn_sgd_element::learn(Data& train, Data& test) {
       }
       SGD(train.data->getRow(), mult, sum);
     }
-    iteration_time = (getusertime() - iteration_time);
+    double iteration_time = (getusertime() - t);
     double rmse_train = evaluate(train);
     double rmse_test = evaluate(test);
-    std::cout << "#Iter=" << std::setw(3) << i << "\tTrain=" << rmse_train << "\tTest=" << rmse_test << std::endl;
+    double full_iter_time = (getusertime() - t);
+    std::cout << "#Iter=" << std::setw(3) << i << "\tTrain=" << rmse_train << "\tTest=" << rmse_test << "\tfull_iter_time=" << full_iter_time << std::endl;
     if (log != NULL) {
       log->log("rmse_train", rmse_train);
       log->log("time_learn", iteration_time);
